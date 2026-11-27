@@ -37,3 +37,77 @@ button { border: 0; cursor: pointer; }
 @media (max-width: 980px) { .sidebar { width: 215px; flex-basis: 215px; }.stats-grid { grid-template-columns: repeat(3, 1fr); }.quote-card { grid-column: span 3; min-height: 110px; }.quote-card p { max-width: none; } }
 @media (max-width: 700px) { .sidebar { display: none; }.topbar { height: 65px; padding: 0 20px; }.mobile-menu { display: grid; }.breadcrumb { margin-right: auto; margin-left: 14px; }.content-wrap { padding: 34px 20px 60px; }.welcome-row { display: block; }.welcome-row .primary-button { margin-top: 22px; width: 100%; }.stats-grid { grid-template-columns: 1fr 1fr; margin-top: 32px; }.quote-card { grid-column: span 2; }.toolbar { align-items: stretch; flex-direction: column; gap: 11px; }.search-box { max-width: none; }.filter-pills { justify-content: space-between; }.pill { flex: 1; }.section-heading { align-items: center; }.view-toggle { display: none; }.task-card { padding: 14px 11px; gap: 10px; }.task-actions { opacity: 1; }.task-meta { gap: 8px; }.category-tag { display: none !important; } }
 @media (max-width: 430px) { .stats-grid { gap: 8px; }.stat-card { padding: 13px; min-height: 120px; }.stat-card strong { font-size: 29px; }.task-title-row h3 { max-width: 190px; }.form-grid { grid-template-columns: 1fr; gap: 16px; }.modal-card { padding: 22px 18px; } }
+
+/* Perfil do usuário */
+
+.avatar-button {
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  cursor: pointer;
+}
+
+.avatar-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-modal {
+  width: min(470px, 100%);
+}
+
+.profile-photo-area {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  margin: -2px 0 8px;
+}
+
+.profile-photo-preview {
+  display: grid;
+  place-items: center;
+  width: 86px;
+  height: 86px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #dbebdf;
+  color: var(--green-deep);
+  font: 700 25px Syne, sans-serif;
+}
+
+.profile-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-area > span {
+  color: #aaa79f;
+  font-size: 10px;
+}
+
+.photo-picker {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px !important;
+  padding: 8px 11px;
+  border-radius: 7px;
+  color: #62645d !important;
+  background: #ebe8e1;
+  cursor: pointer;
+}
+
+.photo-picker input {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .topbar-actions {
+    gap: 10px;
+  }
+
+  .logout-button {
+    font-size: 11px;
+  }
+}

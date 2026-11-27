@@ -6,7 +6,15 @@ let pool = null
 let databaseReady = false
 
 function poolOptions() {
-  if (config.databaseUrl) return { uri: config.databaseUrl, waitForConnections: true, connectionLimit: 10, queueLimit: 0 }
+  if (config.databaseUrl) {
+    return {
+      uri: config.databaseUrl,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    }
+  }
+
   return {
     host: config.mysqlHost,
     port: config.mysqlPort,
@@ -22,16 +30,29 @@ function poolOptions() {
 export async function initDatabase() {
   try {
     pool = mysql.createPool(poolOptions())
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(120) NOT NULL,
         email VARCHAR(190) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
+        profile_photo LONGTEXT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
+
+    try {
+      await pool.query(
+        'ALTER TABLE users ADD COLUMN profile_photo LONGTEXT NULL'
+      )
+    } catch (error) {
+      if (error.code !== 'ER_DUP_FIELDNAME') {
+        throw error
+      }
+    }
+
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tasks (
         id CHAR(36) PRIMARY KEY,
@@ -46,18 +67,34 @@ export async function initDatabase() {
         estimated_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 30,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        CONSTRAINT fk_tasks_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        CONSTRAINT fk_tasks_user
+          FOREIGN KEY (user_id)
+          REFERENCES users(id)
+          ON DELETE CASCADE,
         INDEX idx_tasks_user_status (user_id, status),
         INDEX idx_tasks_user_due_date (user_id, due_date)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
+
     databaseReady = true
-    logger.info('MySQL conectado e schema de usuários/tarefas verificado')
+
+    logger.info(
+      'MySQL conectado e schema de usuários, perfis e tarefas verificado'
+    )
   } catch (error) {
-    logger.error('MySQL indisponível; ativando fallback em memória para demonstração', { error: error.message })
+    logger.error(
+      'MySQL indisponível; ativando fallback em memória para demonstração',
+      { error: error.message }
+    )
+
     databaseReady = false
   }
 }
 
-export function getPool() { return databaseReady ? pool : null }
-export function databaseStatus() { return databaseReady ? 'up' : 'memory-fallback' }
+export function getPool() {
+  return databaseReady ? pool : null
+}
+
+export function databaseStatus() {
+  return databaseReady ? 'up' : 'memory-fallback'
+}
