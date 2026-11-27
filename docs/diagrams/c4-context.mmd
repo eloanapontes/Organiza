@@ -1,0 +1,7 @@
+C4Context
+  title Organiza — Diagrama de Contexto
+  Person(user, "Pessoa usuária", "Organiza tarefas do dia a dia e estudos")
+  System(organiza, "Organiza", "Aplicação web para planejar, acompanhar e concluir tarefas")
+  System_Ext(jira, "Jira", "Gestão do backlog e fluxo de trabalho da equipe")
+  Rel(user, organiza, "Cria, consulta, atualiza e conclui tarefas")
+  Rel(user, jira, "Acompanha o progresso do projeto")

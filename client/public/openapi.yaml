@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: Organiza API
+  version: 1.1.0
+  description: API com cadastro, login e tarefas isoladas por usuário.
+servers:
+  - url: /api
+paths:
+  /auth/register: { post: { summary: Cadastra uma conta, responses: { '201': { description: Usuário criado } } } }
+  /auth/login: { post: { summary: Cria uma sessão, responses: { '200': { description: Sessão criada } } } }
+  /auth/me: { get: { summary: Retorna a sessão atual, security: [{ sessionCookie: [] }], responses: { '200': { description: Usuário autenticado } } } }
+  /auth/logout: { post: { summary: Encerra a sessão, security: [{ sessionCookie: [] }], responses: { '204': { description: Sessão encerrada } } } }
+  /tasks: { get: { summary: Lista tarefas do usuário, security: [{ sessionCookie: [] }], responses: { '200': { description: Lista isolada por user_id } } }, post: { summary: Cria tarefa do usuário, security: [{ sessionCookie: [] }], responses: { '201': { description: Tarefa criada } } } }
+  /tasks/{id}: { patch: { summary: Atualiza tarefa própria, security: [{ sessionCookie: [] }], responses: { '200': { description: Tarefa atualizada } } }, delete: { summary: Exclui tarefa própria, security: [{ sessionCookie: [] }], responses: { '204': { description: Tarefa excluída } } } }
+components:
+  securitySchemes:
+    sessionCookie: { type: apiKey, in: cookie, name: organiza_session }

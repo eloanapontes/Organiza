@@ -1,0 +1,16 @@
+C4Container
+  title Organiza — Diagrama de Containers
+  Person(user, "Pessoa usuária")
+  System_Boundary(organiza, "Organiza") {
+    Container(gateway, "Nginx Gateway", "Nginx", "Proxy reverso e entrada HTTP")
+    Container(frontend, "Frontend", "React + Vite + Nginx", "Login, cadastro e dashboard")
+    Container(backend, "Backend", "Node.js + Express", "API, auth, tarefas e logs")
+    ContainerDb(mysql, "MySQL", "MySQL 8.4", "Usuários e tarefas por user_id")
+    ContainerDb(redis, "Redis", "Redis 7", "Cache TTL e Pub/Sub")
+  }
+  Rel(user, gateway, "HTTPS/HTTP")
+  Rel(gateway, frontend, "Rotas web")
+  Rel(gateway, backend, "/api e /health")
+  Rel(frontend, backend, "Fetch same-origin /api")
+  Rel(backend, mysql, "Lê e grava usuários/tarefas")
+  Rel(backend, redis, "Cache-aside e eventos")

@@ -1,0 +1,80 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: organiza-backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: organiza
+      MYSQL_USER: organiza
+      MYSQL_PASSWORD: organiza
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: troque-esta-chave-em-producao
+      CACHE_TTL_SECONDS: 30
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: client.Dockerfile
+    container_name: organiza-frontend
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    container_name: organiza-mysql
+    environment:
+      MYSQL_DATABASE: organiza
+      MYSQL_USER: organiza
+      MYSQL_PASSWORD: organiza
+      MYSQL_ROOT_PASSWORD: root-organiza
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: organiza-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: organiza-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:

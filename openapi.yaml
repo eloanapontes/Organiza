@@ -1,0 +1,134 @@
+openapi: 3.0.3
+info:
+  title: Organiza API
+  version: 1.1.0
+  description: API para contas e tarefas pessoais/de estudo com isolamento por usuário.
+servers:
+  - url: /api
+paths:
+  /auth/register:
+    post:
+      summary: Cadastra uma conta e inicia a sessão
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInput' }
+      responses:
+        '201': { description: Usuário criado }
+        '409': { description: E-mail já cadastrado }
+  /auth/login:
+    post:
+      summary: Autentica uma conta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        '200': { description: Sessão criada em cookie HTTP-only }
+        '401': { description: Credenciais inválidas }
+  /auth/me:
+    get:
+      summary: Retorna o usuário da sessão atual
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Usuário autenticado }
+        '401': { description: Não autenticado }
+  /auth/logout:
+    post:
+      summary: Encerra a sessão atual
+      security: [{ sessionCookie: [] }]
+      responses:
+        '204': { description: Sessão encerrada }
+  /tasks:
+    get:
+      summary: Lista somente as tarefas do usuário autenticado
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [todo, doing, done] }
+        - in: query
+          name: area
+          schema: { type: string, enum: [daily, study] }
+        - in: query
+          name: search
+          schema: { type: string }
+      responses:
+        '200': { description: Lista isolada por user_id }
+        '401': { description: Não autenticado }
+    post:
+      summary: Cria tarefa para o usuário autenticado
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '201': { description: Tarefa criada }
+        '401': { description: Não autenticado }
+  /tasks/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Busca uma tarefa própria
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200': { description: Tarefa encontrada }
+        '404': { description: Não encontrada }
+    patch:
+      summary: Atualiza uma tarefa própria
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskUpdate' }
+      responses:
+        '200': { description: Tarefa atualizada }
+        '404': { description: Não encontrada }
+    delete:
+      summary: Exclui uma tarefa própria
+      security: [{ sessionCookie: [] }]
+      responses:
+        '204': { description: Tarefa excluída }
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: organiza_session
+  schemas:
+    RegisterInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 120 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    TaskInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, maxLength: 160 }
+        description: { type: string }
+        area: { type: string, enum: [daily, study] }
+        category: { type: string }
+        priority: { type: string, enum: [low, medium, high] }
+        status: { type: string, enum: [todo, doing, done] }
+        due_date: { type: string, format: date, nullable: true }
+        estimated_minutes: { type: integer, minimum: 5 }
+    TaskUpdate:
+      allOf:
+        - $ref: '#/components/schemas/TaskInput'
